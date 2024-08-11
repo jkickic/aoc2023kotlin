@@ -28,13 +28,43 @@ class Day10KtTest {
 
     @Test
     fun testInputData() {
-        val stepCount = solvePart1("day10/test_input.txt")
+        val stepCount = solveDay10("day10/test_input.txt").first
         assert(stepCount == 8)
     }
 
     @Test
     fun testSolvePart1() {
-        val stepCount = solvePart1("day10/input.txt")
+        val stepCount = solveDay10("day10/input.txt").first
         assert(stepCount == 6786)
+    }
+
+    @Test
+    fun testInputDataPart2a() {
+        val insideCount = solveDay10("day10/test_input_part2a.txt").second
+        assert(insideCount == 4)
+    }
+
+    @Test
+    fun testInputDataPart2b() {
+        val insideCount = solveDay10("day10/test_input_part2b.txt").second
+        assert(insideCount == 4)
+    }
+
+    @Test
+    fun testInputDataPart2c() {
+        val insideCount = solveDay10("day10/test_input_part2c.txt").second
+        assert(insideCount == 8)
+    }
+
+    @Test
+    fun testInputDataPart2d() {
+        val insideCount = solveDay10("day10/test_input_part2d.txt").second
+        assert(insideCount == 10)
+    }
+
+    @Test
+    fun testInputDataPart2() {
+        val insideCount = solveDay10("day10/input.txt").second
+        assert(insideCount == 495)
     }
 }

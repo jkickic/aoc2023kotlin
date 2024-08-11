@@ -1,14 +1,19 @@
 package day10
 
 import Helpers
+import kotlin.math.max
+import kotlin.math.min
 
-fun solvePart1(s: String) : Int {
+private val CORNERS = listOf("F", "L", "J", "7", "S")
+
+fun solveDay10(s: String) : Pair<Int, Int> {
     val lines = Helpers.loadResourceFile(s);
     val start = findStart(lines)
     val matrix = lines.map { it.toCharArray() }
 
     var currentNode = start
     var loopLength = 0
+    var allLoopPoints = ArrayList<Coordinates>()
     while (true) {
         val (nextCoordinates, previousDirection) = currentNode.findNextCoordinates()
         val nextNode = Node(
@@ -17,13 +22,16 @@ fun solvePart1(s: String) : Int {
             previousDirection
         )
         currentNode = nextNode
+        allLoopPoints += nextNode.coords
         loopLength++
         if (nextNode.symbol == 'S') {
             break
         }
     }
     val furthestPointFromTheStart = loopLength / 2
-    return furthestPointFromTheStart
+
+    val pointsInside = countPointsInside(allLoopPoints, matrix)
+    return Pair(furthestPointFromTheStart, pointsInside)
 }
 
 private const val START = "S"
@@ -52,7 +60,7 @@ enum class Direction {
 data class Node(val symbol: Char, val coords: Coordinates, val from: Direction) {
 
     fun findNextCoordinates(): Pair<Coordinates, Direction> {
-        val nextDirection = when (symbol) {
+        val dir = when (symbol) {
             '-' -> if (from == Direction.LEFT) Direction.LEFT else Direction.RIGHT
             '|' -> if (from == Direction.UP) Direction.UP else Direction.DOWN
             'L' -> if (from == Direction.LEFT) Direction.UP else Direction.RIGHT
@@ -62,9 +70,44 @@ data class Node(val symbol: Char, val coords: Coordinates, val from: Direction) 
             'S' -> Direction.DOWN // Hardcoded cheat
             else -> Direction.NONE
         }
-        return Pair(nextDirection.moveCoordinates(coords), nextDirection)
+        return Pair(dir.moveCoordinates(coords), dir)
     }
 }
 
 data class Coordinates(val x: Int, val y: Int)
 
+fun countPointsInside(allLoopPoints: java.util.ArrayList<Coordinates>, matrix: List<CharArray>): Int {
+    var counter = 0
+    for (y in 0 until matrix.size) {
+        for (x in 0 until matrix[y].size) {
+            val pointCheck = Coordinates(x, y)
+            if (!allLoopPoints.contains(pointCheck) && pointInPolygon(pointCheck, allLoopPoints)) {
+                counter++
+            }
+        }
+    }
+    return counter
+}
+
+//https://www.naukri.com/code360/library/check-if-a-point-lies-in-the-interior-of-a-polygon
+fun pointInPolygon(coordinate: Coordinates, polygonVerticies: ArrayList<Coordinates>): Boolean {
+    val x = coordinate.x
+    val y = coordinate.y
+    var inside = false
+    var currentVertex = polygonVerticies.first()
+    for (i in 1..<polygonVerticies.size + 1) {
+        var nextVertex = polygonVerticies[i % polygonVerticies.size]
+
+        if (y > min(currentVertex.y, nextVertex.y) && y <= max(currentVertex.y, nextVertex.y)) {
+            if (x <= max(currentVertex.x, nextVertex.x)) {
+                val xIntersection = ((y - currentVertex.y) * (nextVertex.x - currentVertex.x) / (nextVertex.y - currentVertex.y) + currentVertex.x)
+
+                if (currentVertex.x == nextVertex.x || x <= xIntersection) {
+                    inside = !inside
+                }
+            }
+        }
+        currentVertex = nextVertex
+    }
+    return inside
+}
